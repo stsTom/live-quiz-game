@@ -1,20 +1,30 @@
 import { games } from "../data/games.data"
 import { Game } from "../types"
 
-export const getGameCode = (data: any, hostId: string) => {
-  const gameId = games.size.toString()
-
+const createGameCode = () => {
   let gameCode = ''
 
   while (gameCode.length < 6){
-    gameCode += Math.random().toString(36)
+    gameCode += Math.random().toString(36).toUpperCase()
   }
 
   gameCode = gameCode.substring(2, 8)
 
+  if (games.get(gameCode)){
+    createGameCode()
+  }
+
+  return gameCode
+}
+
+export const setNewGame = (data: any, hostId: string) => {
+  const gameId = games.size.toString()
+
+  const code = createGameCode()
+
   const newGame: Game = {
     'id': gameId,
-    'code': gameCode,
+    code,
     hostId,
     'players': [],
     'currentQuestion': 0,
@@ -23,7 +33,7 @@ export const getGameCode = (data: any, hostId: string) => {
     ...data
   }
 
-  games.set(gameId, newGame)
+  games.set(code, newGame)
 
-  return { gameId, 'code': gameCode }
+  return { gameId, 'code': code }
 }

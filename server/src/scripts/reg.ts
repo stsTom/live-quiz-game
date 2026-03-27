@@ -1,5 +1,6 @@
 import { User } from "../types"
 import { users } from "../data/users.data"
+import WebSocket from "ws"
 
 export const getRegResponseData = (data: any) => {
   let user = users.get(data.name)
