@@ -1,3 +1,3 @@
 import { User } from "../types";
 
-export const users: User[] = []
+export const users = new Map<String, User>

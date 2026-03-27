@@ -2,7 +2,7 @@ import { User } from "../types"
 import { users } from "../data/users.data"
 
 export const getRegResponseData = (data: any) => {
-  let user = users.find((user => user.name === data.name)) //change to Map
+  let user = users.get(data.name)
   let error: boolean
   let errorText: string
 
@@ -11,10 +11,10 @@ export const getRegResponseData = (data: any) => {
     errorText = 'This user already exists, but the password provided is incorrect'
   }else{
     if (!user){
-      const index = users.length
+      const index = users.size.toString()
       const newUser: User = { 'index': index, ...data }
       
-      users.push(newUser)
+      users.set(data.name, newUser)
       user = newUser
     }
     
