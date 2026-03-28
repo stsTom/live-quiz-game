@@ -1,4 +1,4 @@
-import { games } from "../data/games.data"
+import { games, gamesById } from "../data/games.data"
 import { users } from "../data/users.data"
 import { Player } from "../types"
 import WebSocket from "ws"
@@ -24,6 +24,7 @@ export const handleGameJoin = (data: any, userName: string | undefined, ws: WebS
   }
 
   game.players.push(playerData) //if the game is not in process?
+  // gamesById.get(game.id)?.players.push(playerData)
   
   const host = users.get(game.hostId)
   const players = game.players //ws shouldn't be sent

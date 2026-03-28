@@ -1,16 +1,20 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import { WSMessage } from './types';
 import { getRegResponseData } from './scripts/reg';
-import { games } from './data/games.data';
+import { games, gamesById } from './data/games.data';
 import { setNewGame } from './scripts/createGame';
 import { handleGameJoin } from './scripts/joinGame';
 import { users } from './data/users.data';
+import { startGame } from './scripts/startGame';
 
 /* TODO
 0. [x] Don't let a host join his own game
 1. [x] Change user selection from array.find() to Map
 2. [ ] Add disconection processing
 3. [ ] Process game deletion
+4. [ ] Refactor scripts (get rid of as many ifs as possible and shorten some scripts, do smth with global scope variables!)
+5. [ ] Refactor: add seperate logic for list of players update
+6. [ ] Add another Map for users to search them by Id
 *. [ ] Trycatch instead of ifs?
 *. [ ] Rename users to registeredUsers in users.data
 *. [ ] !!! Learn to add semicolons !!!
@@ -24,13 +28,11 @@ wss.on('connection', ws => {
   ws.on('message', message => {
     const messageData = JSON.parse(message.toString())
     const {type, data} = messageData
+    const postponedResponses: WSMessage[] = []
     
     var response: WSMessage
 
-    const postponedResponses: WSMessage[] = []
-
     switch(type){
-      //registration and game creation cases
       case 'reg':
         response = { type, 'data': getRegResponseData(data, ws), 'id': 0 }
         if (!response.data.error){
@@ -38,7 +40,6 @@ wss.on('connection', ws => {
         }
         ws.send(JSON.stringify(response))
         break
-
       case 'create_game':
         var responseType = 'game_created'
         const hostName = activeConncections.get(ws)
@@ -50,8 +51,6 @@ wss.on('connection', ws => {
         response = { 'type': responseType, 'data': setNewGame(data, hostName), 'id': 0 }
         ws.send(JSON.stringify(response))
         break
-
-      //joining the game case
       case 'join_game':
         const joinData = handleGameJoin(data, activeConncections.get(ws), ws)
         
@@ -85,10 +84,32 @@ wss.on('connection', ws => {
           playerSocket?.send(JSON.stringify(playersUpdateBroadcast))
         }
 
+        // console.log(hostSocket)
         hostSocket?.send(JSON.stringify(joiningBroadcast))
         hostSocket?.send(JSON.stringify(playersUpdateBroadcast))
         break
+      case 'start_game':
+        var responseType = 'question'
 
+        const responseData = startGame(data.gameId)
+        const players = gamesById.get(data.gameId)?.players
+        
+        response = { 'type': responseType, 'data': responseData, 'id': 0 }
+        
+        if (!players){
+          return
+        }
+
+        for (const player of players!){
+          const playerSocket = player.ws
+
+          playerSocket?.send(JSON.stringify(response))
+        }
+
+        var gameHost = users.get(gamesById.get(data.gameId)?.hostId!)?.ws
+
+        gameHost?.send(JSON.stringify(response))
+        break
       default:
         console.log('unknown request type')
         return

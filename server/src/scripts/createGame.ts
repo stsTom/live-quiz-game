@@ -1,4 +1,4 @@
-import { games } from "../data/games.data"
+import { games, gamesById } from "../data/games.data"
 import { users } from "../data/users.data"
 import { Game } from "../types"
 
@@ -35,6 +35,7 @@ export const setNewGame = (data: any, hostName: string) => {
   }
 
   games.set(code, newGame)
+  gamesById.set(gameId, newGame)
 
   return { gameId, 'code': code }
 }
