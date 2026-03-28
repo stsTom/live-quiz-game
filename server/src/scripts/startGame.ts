@@ -9,5 +9,7 @@ export const startGame = (game_id: string) => {
   const timeLimitSec = gameData?.questions[questionNumber!].timeLimitSec
   const responseData = { questionNumber, totalQuestions, text, options, timeLimitSec }
 
+  gamesById.get(game_id)!.status = 'in_progress'
+
   return responseData
 }

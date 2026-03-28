@@ -6,6 +6,7 @@ import { setNewGame } from './scripts/createGame';
 import { handleGameJoin } from './scripts/joinGame';
 import { users } from './data/users.data';
 import { startGame } from './scripts/startGame';
+import { handleAnswer } from './scripts/handleAnswer';
 
 /* TODO
 0. [x] Don't let a host join his own game
@@ -110,6 +111,11 @@ wss.on('connection', ws => {
 
         gameHost?.send(JSON.stringify(response))
         break
+      case 'answer':
+        handleAnswer(data, activeConncections.get(ws))
+
+        response = { 'type': 'answer_accepted', 'data': { 'questionIndex': data.questionIndex }, 'id': 0 }
+        ws.send(JSON.stringify(response))
       default:
         console.log('unknown request type')
         return
