@@ -1,4 +1,5 @@
 import { games } from "../data/games.data"
+import { users } from "../data/users.data"
 import { Game } from "../types"
 
 const createGameCode = () => {
@@ -17,15 +18,15 @@ const createGameCode = () => {
   return gameCode
 }
 
-export const setNewGame = (data: any, hostId: string) => {
+export const setNewGame = (data: any, hostName: string) => {
   const gameId = games.size.toString()
-
+  const hostId = users.get(hostName)?.index
   const code = createGameCode()
 
   const newGame: Game = {
     'id': gameId,
     code,
-    hostId,
+    'hostId': hostName, // I don't know yet how to change the sctructure so I could reference users by id instead of name
     'players': [],
     'currentQuestion': 0,
     'status': 'waiting',
