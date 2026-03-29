@@ -12,9 +12,9 @@ import { getQuestionResults } from './scripts/getQuestionResults';
 /* TODO
 0. [x] Don't let a host join his own game
 1. [x] Change user selection from array.find() to Map
-2. [ ] Add disconection processing
+2. [x] Add disconection processing
 3. [ ] Process game deletion
-4. [ ] Refactor scripts (get rid of as many ifs as possible and shorten some scripts, do smth with global scope variables!)
+4. [ ] Refactor scripts (move repeating pieces into separate scripts (such as handling timer, sending broadcasts, etc))
 5. [ ] Refactor: add seperate logic for list of players update
 6. [ ] Add another Map for users to search them by Id
 7. [ ] Ids cannot be assigned by the amount of users! (generate ids the same way as codes?)
@@ -202,6 +202,29 @@ wss.on('connection', ws => {
   ws.on('close', () => {
     gamesById.forEach(game => {
       game.players = game.players.filter(player => player.name === activeConncections.get(ws))
+      const updatedPlayersList = []
+
+      for (const player of game.players){
+        const playerData = {
+          'name': player.name,
+          'index': player.index,
+          'score': player.score
+        }
+        
+        updatedPlayersList.push(playerData)
+      }
+      
+      const updateMessage: WSMessage = { 'type': 'update_players', 'data': updatedPlayersList, 'id': 0 }
+
+      for (const player of game.players){
+        const playerSocket = player.ws
+
+        playerSocket?.send(JSON.stringify(updateMessage))
+      } 
+
+      const hostSocket = users.get(game.hostId)?.ws
+
+      hostSocket?.send(JSON.stringify(updateMessage))
     })
     activeConncections.delete(ws)
   })
