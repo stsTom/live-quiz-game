@@ -1,4 +1,4 @@
-import { games, gamesById } from "../data/games.data"
+import { games } from "../data/games.data"
 import { users } from "../data/users.data"
 import { Player } from "../types"
 import WebSocket from "ws"
@@ -18,18 +18,24 @@ export const handleGameJoin = (data: any, userName: string | undefined, ws: WebS
 
   const playerData: Player = {
     'name': userName,
-    'index': users.get(userName)!.index, //TODO: check if there are cases when users won't contain username
+    'index': users.get(userName)!.index,
     'score': 0,
     'ws': ws
   }
 
-  game.players.push(playerData) //if the game is not in process?
-  // gamesById.get(game.id)?.players.push(playerData)
+  if (!game.players.find(player => player === playerData) && game.status === 'waiting'){
+    game.players.push(playerData)
+    const host = users.get(game.hostId)
+    const players = []
   
-  const host = users.get(game.hostId)
-  const players = game.players //ws shouldn't be sent
-  const playerCount = players.length
-  const fullData = {host, 'gameId': game.id, players, playerCount, userName}
-
-  return fullData
+    for (const player of game.players){
+      const {ws, ...data} = player
+      players.push(data)
+    }
+  
+    const playerCount = players.length
+    const fullData = {host, 'gameId': game.id, players, playerCount, userName}
+  
+    return fullData
+  }
 }

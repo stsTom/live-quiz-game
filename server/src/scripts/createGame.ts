@@ -1,5 +1,4 @@
 import { games, gamesById } from "../data/games.data"
-import { users } from "../data/users.data"
 import { Game } from "../types"
 
 const createGameCode = () => {
@@ -20,7 +19,6 @@ const createGameCode = () => {
 
 export const setNewGame = (data: any, hostName: string) => {
   const gameId = games.size.toString()
-  const hostId = users.get(hostName)?.index
   const code = createGameCode()
 
   const newGame: Game = {

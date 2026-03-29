@@ -6,7 +6,6 @@ import { setNewGame } from './scripts/createGame';
 import { handleGameJoin } from './scripts/joinGame';
 import { users } from './data/users.data';
 import { handleNextQuestion } from './scripts/handleNextQuestion';
-import { request } from 'http';
 import { acceptAnswer } from './scripts/acceptAnswer';
 import { getQuestionResults } from './scripts/getQuestionResults';
 
@@ -84,7 +83,7 @@ wss.on('connection', ws => {
 
         ws.send(JSON.stringify(joiningResponse))
       
-        for (const player of gamePlayersData){
+        for (const player of gamesById.get(gameId)?.players!){
           const playerSocket = player.ws
 
           playerSocket?.send(JSON.stringify(joiningBroadcast))
@@ -199,5 +198,11 @@ wss.on('connection', ws => {
         console.log('unknown request type')
         return
     }
+  })
+  ws.on('close', () => {
+    gamesById.forEach(game => {
+      game.players = game.players.filter(player => player.name === activeConncections.get(ws))
+    })
+    activeConncections.delete(ws)
   })
 })

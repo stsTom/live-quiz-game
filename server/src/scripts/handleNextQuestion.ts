@@ -10,6 +10,7 @@ export const handleNextQuestion = (gameId: string) => {
   var responseType = 'question'
 
   if (game.questions.length === game.currentQuestion){
+    game.status = 'finished'
     responseType = 'game_finished'
 
     const playersByRank = game.players.sort((a, b) => a.score - b.score)
