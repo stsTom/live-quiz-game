@@ -202,6 +202,29 @@ wss.on('connection', ws => {
   ws.on('close', () => {
     gamesById.forEach(game => {
       game.players = game.players.filter(player => player.name === activeConncections.get(ws))
+      const updatedPlayersList = []
+
+      for (const player of game.players){
+        const playerData = {
+          'name': player.name,
+          'index': player.index,
+          'score': player.score
+        }
+        
+        updatedPlayersList.push(playerData)
+      }
+      
+      const updateMessage: WSMessage = { 'type': 'update_players', 'data': updatedPlayersList, 'id': 0 }
+
+      for (const player of game.players){
+        const playerSocket = player.ws
+
+        playerSocket?.send(JSON.stringify(updateMessage))
+      } 
+
+      const hostSocket = users.get(game.hostId)?.ws
+
+      hostSocket?.send(JSON.stringify(updateMessage))
     })
     activeConncections.delete(ws)
   })
